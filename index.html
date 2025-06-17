@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,7 +15,201 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title></title>
 <LINK href='https://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
-<LINK rel=stylesheet href="sw-Style.css">
+<style>
+/* SW-Style.css content */
+body {
+    font-family: 'Varela Round', sans-serif;
+    background-color: #999999;
+    color: #000000;
+    margin: 0;
+    padding: 0;
+}
+
+.logo {
+    float: left;
+    margin: 10px;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    margin: 20px 0;
+    font-size: 28px;
+}
+
+h2 {
+    color: #333;
+    text-align: center;
+    margin: 20px 0;
+    font-size: 24px;
+}
+
+.back-button {
+    float: left;
+    cursor: pointer;
+    margin: 10px;
+}
+
+.list-name {
+    text-align: center;
+    clear: both;
+    padding-top: 10px;
+}
+
+.menu-item {
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.menu-item:hover {
+    background-color: #e0e0e0;
+}
+
+.list {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px 0;
+    font-size: 18px;
+}
+
+.practice-box, .quiz-box {
+    font-size: 24px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    margin: 10px;
+    width: 300px;
+}
+
+.button {
+    cursor: pointer;
+    margin: 5px;
+    transition: opacity 0.3s;
+}
+
+.button:hover {
+    opacity: 0.8;
+}
+
+.checkmark {
+    margin: 0 10px;
+}
+
+.subnav {
+    color: #666;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px;
+    margin: 0;
+}
+
+.note {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    margin: 20px;
+}
+
+.results-table {
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+.results-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.share {
+    color: #666;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.linkBox {
+    width: 300px;
+    padding: 5px;
+    margin: 5px;
+}
+
+.shareOptions {
+    margin: 10px auto;
+}
+
+.shareOptions td {
+    padding: 5px;
+}
+
+.copyright {
+    color: #666;
+    font-size: 12px;
+    text-align: center;
+    margin: 10px;
+}
+
+/* Progress tracking styles */
+.progress-info {
+    background-color: #e8f4fd;
+    border: 2px solid #4a90e2;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px auto;
+    text-align: center;
+    font-size: 16px;
+    color: #2c5aa0;
+    font-weight: bold;
+    max-width: 400px;
+}
+
+.navigation-controls {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.nav-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin: 0 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+    background-color: #357abd;
+}
+
+.nav-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.word-counter {
+    background-color: #f0f8ff;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 15px auto;
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    max-width: 300px;
+}
+</style>
 <link rel="icon" href="images/favicon-32.png" sizes="32x32">
 <link rel="icon" href="images/favicon-128.png" sizes="128x128">
 <link rel="icon" href="images/favicon-192.png" sizes="192x192">
@@ -24,7 +217,6 @@
 <link rel="apple-touch-icon" href="images/favicon-180.png" sizes="180x180">
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
 
 <SCRIPT type="text/javascript">
 
@@ -38,6 +230,11 @@
 	var loaded = false
 	var rawArray = []
     var pageTitle = "Spelling Words"
+    
+    // Progress tracking variables
+    var currentWordIndex = 0
+    var totalWords = 0
+    var progressData = {}
 
     //get data from Google Sheets pubHTML
 
@@ -233,10 +430,19 @@
 		document.getElementById('menu').style.display = "none"
 		list = num // for use in moreLink()
 		prepWords(num)
+		
+		// Initialize progress tracking for this list
+		if (!progressData[num]) {
+			progressData[num] = {
+				currentIndex: 0,
+				totalWords: writtenWords.length
+			}
+		}
+		
 		listCode = ""
 		if (speech) {
 			for (var i=0;i<writtenWords.length;i++) {
-				listCode = listCode + "<div class='list'><img src='images/Play-Green-Small.png' align='absmiddle' height='32' width='32' onclick='playWord(" + i + ")' class='button' style='margin-right: 10px;' title='Play Word'> " + writtenWords[i] + "</div>"
+				listCode = listCode + "<div class='list'><img src='https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f50a.svg' align='absmiddle' height='32' width='32' onclick='playWord(" + i + ")' class='button' style='margin-right: 10px;' title='Play Word'> " + writtenWords[i] + "</div>"
 				}
 			}
 		else {
@@ -246,9 +452,6 @@
 			}
 		document.getElementById('playWords').innerHTML = listCode
 		document.getElementById('listName').innerHTML =  data[1][num]
-		//document.getElementById('formStudentName').value = data[1][num]
-		//submitEmail = data[2][num] // also used later to determine if results are emailed or not
-		//document.getElementById('formSubmitEmail').value = submitEmail
 		switchTab('list')
 		document.getElementById('main').style.display = "block"
 
@@ -308,6 +511,7 @@
 			}
 		quizWords = writtenWords.slice()
 		quizContext = context.slice()
+		totalWords = writtenWords.length
 		}
 
 	voices = window.speechSynthesis.getVoices()
@@ -388,16 +592,6 @@
 					letter = "эф"
 					i++
 					}
-				/*
-				else if (checkLetter.toLowerCase() == "ы") {
-					letter = "ы"
-					i++
-					}
-				else if (checkLetter.toLowerCase() == "э") {
-					letter = "э"
-					i++
-					}
-				*/
 				}
 				
 			//Check for punctuation
@@ -430,20 +624,72 @@
 
 	function startPractice() {
 		speechSynthesis.cancel()
-		wordNum = 0
+		
+		// Get current progress for this list
+		if (progressData[list]) {
+			currentWordIndex = progressData[list].currentIndex
+		} else {
+			currentWordIndex = 0
+		}
+		
 		document.getElementById('practiceWord').style.visibility = "visible"
 		document.getElementById('practiceBox').style.display = "inline"
 		document.getElementById('practiceDone').style.display = "none"
+		
+		updateProgressDisplay()
 		nextWord()
 		}
+		
+	function updateProgressDisplay() {
+		var progressHtml = "<div class='progress-info'>";
+		progressHtml += "Progress: Word " + (currentWordIndex + 1) + " of " + totalWords;
+		if (currentWordIndex > 0) {
+			progressHtml += " (" + Math.round(((currentWordIndex) / totalWords) * 100) + "% complete)";
+		}
+		progressHtml += "</div>";
+		
+		var navHtml = "<div class='navigation-controls'>";
+		navHtml += "<button class='nav-button' onclick='previousWord()' " + (currentWordIndex <= 0 ? "disabled" : "") + ">← Previous</button>";
+		navHtml += "<button class='nav-button' onclick='nextWord()' " + (currentWordIndex >= totalWords - 1 ? "disabled" : "") + ">Next →</button>";
+		navHtml += "</div>";
+		
+		document.getElementById('progressInfo').innerHTML = progressHtml + navHtml;
+	}
+	
+	function previousWord() {
+		if (currentWordIndex > 0) {
+			speechSynthesis.cancel()
+			currentWordIndex--
+			progressData[list].currentIndex = currentWordIndex
+			
+			// Reset the word input and UI
+			document.getElementById('confirm').innerHTML = "&nbsp;"
+			document.getElementById('checkmark').style.visibility = "hidden"
+			document.getElementById('next').style.display = "none"
+			document.getElementById('check').style.display = "inline"
+			document.getElementById('repeat').style.display = "inline"
+			document.getElementById('practiceWord').value = ""
+			document.getElementById('practiceWord').focus()
+			
+			updateProgressDisplay()
+			
+			// Speak the new word
+			speak(prompts[7])
+			speak(spokenWords[currentWordIndex])
+			if (context[currentWordIndex] != "") {
+				speak(context[currentWordIndex])
+				speak(spokenWords[currentWordIndex])
+			}
+		}
+	}
 
 	function repeatWord() {
 		speechSynthesis.cancel()
 		document.getElementById('practiceWord').focus()
-		speak(spokenWords[wordNum])
-		if (context[wordNum] != "") {
-			speak(context[wordNum])
-			speak(spokenWords[wordNum])
+		speak(spokenWords[currentWordIndex])
+		if (context[currentWordIndex] != "") {
+			speak(context[currentWordIndex])
+			speak(spokenWords[currentWordIndex])
 			}
 		}
 
@@ -453,9 +699,9 @@
 			}
 		else {
 			speechSynthesis.cancel()
-			document.getElementById('confirm').innerHTML = writtenWords[wordNum]
-			if (document.getElementById('practiceWord').value.trim() == writtenWords[wordNum]) {
-				document.getElementById('checkmark').src = "images/Green-Check.png"
+			document.getElementById('confirm').innerHTML = writtenWords[currentWordIndex]
+			if (document.getElementById('practiceWord').value.trim() == writtenWords[currentWordIndex]) {
+				document.getElementById('checkmark').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='32' viewBox='0 0 24 24' fill='none' stroke='%2300aa00' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20,6 9,17 4,12'%3E%3C/polyline%3E%3C/svg%3E"
 				document.getElementById('checkmark').style.visibility = "visible"
 				document.getElementById('check').style.display = "none"
 				document.getElementById('repeat').style.display = "none"
@@ -463,25 +709,29 @@
 				speak(prompts[5])
 				}
 			else {
-				writtenWords.splice(writtenWords.length,0,writtenWords[wordNum])
-				spokenWords.splice(spokenWords.length,0,spokenWords[wordNum])
-				context.splice(context.length,0,context[wordNum])
-				document.getElementById('checkmark').src = "images/Red-X.png"
+				// Add word to end of practice list if incorrect
+				writtenWords.splice(writtenWords.length,0,writtenWords[currentWordIndex])
+				spokenWords.splice(spokenWords.length,0,spokenWords[currentWordIndex])
+				context.splice(context.length,0,context[currentWordIndex])
+				totalWords = writtenWords.length
+				document.getElementById('checkmark').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='32' viewBox='0 0 24 24' fill='none' stroke='%23ff0000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E"
 				document.getElementById('checkmark').style.visibility = "visible"
 				document.getElementById('check').style.display = "none"
 				document.getElementById('repeat').style.display = "none"
 				document.getElementById('next').style.display = "inline"
 				speak(prompts[6])
-				speak(spokenWords[wordNum])
-				spellWord(writtenWords[wordNum])
+				speak(spokenWords[currentWordIndex])
+				spellWord(writtenWords[currentWordIndex])
 				}
-			wordNum++
 			}
 		}
 
 	function nextWord() {
 		speechSynthesis.cancel()
-		if (wordNum == writtenWords.length) {
+		currentWordIndex++
+		progressData[list].currentIndex = currentWordIndex
+		
+		if (currentWordIndex >= totalWords) {
 			finishPractice()
 			}
 		else {
@@ -492,11 +742,14 @@
 			document.getElementById('repeat').style.display = "inline"
 			document.getElementById('practiceWord').value = ""
 			document.getElementById('practiceWord').focus()
+			
+			updateProgressDisplay()
+			
 			speak(prompts[7])
-			speak(spokenWords[wordNum])
-			if (context[wordNum] != "") {
-				speak(context[wordNum])
-				speak(spokenWords[wordNum])
+			speak(spokenWords[currentWordIndex])
+			if (context[currentWordIndex] != "") {
+				speak(context[currentWordIndex])
+				speak(spokenWords[currentWordIndex])
 				}
 			}
 		}
@@ -505,6 +758,11 @@
 		document.getElementById('practiceWord').blur()
 		document.getElementById('practiceBox').style.display = "none"
 		document.getElementById('practiceDone').style.display = "inline"
+		
+		// Reset progress for this list
+		progressData[list].currentIndex = 0
+		currentWordIndex = 0
+		
 		speak(prompts[8])
 		}
 
@@ -523,7 +781,7 @@
 	function startQuiz() {
 		quizAnswers = []
 		speechSynthesis.cancel()
-		document.getElementById('nextButtonQuiz').src = "images/Next-Pink.png"
+		document.getElementById('nextButtonQuiz').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 24 24' fill='none' stroke='%23ff00cc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,18 15,12 9,6'%3E%3C/polyline%3E%3C/svg%3E"
 		document.getElementById('nextButtonQuiz').title = "Next Word"
 		document.getElementById('quizResults').style.display = "none"
 		document.getElementById('quizEmail').style.display = "none"
@@ -542,408 +800,4 @@
 		speechSynthesis.cancel()
 		document.getElementById('quizWord').focus()
 		speak(quizWords[wordNum - 1])
-		if (quizContext[wordNum - 1] != "") {
-			speak(quizContext[wordNum - 1])
-			speak(quizWords[wordNum - 1])
-			}
-		}
-
-	function nextQuizWord() {
-		if (document.getElementById('quizWord').value == "") {
-			document.getElementById('quizWord').focus()
-			}
-		else {
-			speechSynthesis.cancel()
-			quizAnswers[wordNum - 1] = document.getElementById('quizWord').value.trim()
-			if (wordNum == quizWords.length) {
-				finishQuiz()
-				}
-			else {
-				document.getElementById('quizWord').value = ""
-				document.getElementById('quizWord').focus()
-				speak(prompts[7])
-				speak(quizWords[wordNum])
-				if (quizContext[wordNum] != "") {
-					speak(quizContext[wordNum])
-					speak(quizWords[wordNum])
-					}
-				wordNum++
-				document.getElementById('quizNum').innerHTML = wordNum
-				if (wordNum == quizWords.length) {
-					document.getElementById('nextButtonQuiz').src = "images/Submit-Pink.png"
-					document.getElementById('nextButtonQuiz').title = "Submit for Scoring"
-					}	
-				}
-			}
-		}
-
-	/*
-	function sendResults() {
-
-		window.onbeforeunload = function() {
-			return "Results have not been emailed."
-			}
-		document.getElementById("formQuizResults").value = resultsEmail
-		document.getElementById("emailForm").submit()
-		document.getElementById('quizEmail').style.display = "inline"
-		}
-	*/
-
-	function updateLang() {
-		if (language == "Chinese") {
-			instructTxt = "请选择"
-			listTxt = "生词"
-			pracTxt = "练习"
-			quizTxt = "考试"	
-			moreTxt = "更多"	
-			}
-		else if (language == "Dutch") {
-			instructTxt = "Kies een lijst:"
-			listTxt = "Lijst"
-			pracTxt = "Oefen"
-			quizTxt = "Quiz"	
-			moreTxt = "More"	
-			}
-		else if (language == "French") {
-			instructTxt = "Choisissez une liste:"
-			listTxt = "Liste"
-			pracTxt = "Pratique"
-			quizTxt = "Quiz"	
-			moreTxt = "More"	
-			}
-		else if (language == "German") {
-			instructTxt = "Wählen Sie eine Liste:"
-			listTxt = "Liste"
-			pracTxt = "Training"
-			quizTxt = "Quiz"	
-			moreTxt = "mehr"
-			}
-		else if (language == "Italian") {
-			instructTxt = "Scegli una lista:"
-			listTxt = "Lista"
-			pracTxt = "Pratica"
-			quizTxt = "Quiz"
-			moreTxt = "Altro"
-			}
-		else if (language == "Portuguese") {
-			instructTxt = "Escolha uma lista:"
-			listTxt = "Lista"
-			pracTxt = "Praticar"
-			quizTxt = "Teste"	
-			moreTxt = "Mais"	
-			}
-		else if (language == "Russian") {
-			instructTxt = "Выберите список:"
-			listTxt = "Список"
-			pracTxt = "Практика"
-			quizTxt = "Квиз"	
-			moreTxt = "Еще"
-			}
-		else if (language == "Spanish") {
-			instructTxt = "Elige una lista:"
-			listTxt = "Lista"
-			pracTxt = "Pr&aacute;ctica"
-			quizTxt = "Prueba"	
-			moreTxt = "M&aacute;s"	
-			}
-		else {
-			instructTxt = "Choose a list:"
-			listTxt = "List"
-			pracTxt = "Practice"
-			quizTxt = "Quiz"	
-			moreTxt = "More"	
-			}
-		document.getElementById("instructTxt").innerHTML = instructTxt
-		document.getElementById("listTxt").innerHTML = listTxt
-		document.getElementById("pracTxt").innerHTML = pracTxt
-		document.getElementById("quizTxt").innerHTML = quizTxt
-		document.getElementById("moreTxt").innerHTML = moreTxt
-		}
-
-	function finishQuiz() {
-		document.getElementById('quizWord').blur()
-		document.getElementById('quizBox').style.display = "none"
-		resultsTable = "<table class='results-table' cellpadding='5'>"
-		resultsEmail = ""
-		numCorrect = 0
-		for (var i=0; i < quizWords.length; i++) {
-			if (quizWords[i] == quizAnswers[i]) {
-				checkImage = "https://www.flippity.net/images/Green-Check-Small.png"
-				emailCkImg = "&#9989;"
-				numCorrect++
-				}
-			else {
-				checkImage = "https://www.flippity.net/images/Red-X-small.png"
-				emailCkImg = "&#10060;"
-				}
-			resultsTable = resultsTable + "<tr><td>" + quizWords[i] + "</td><td>" + quizAnswers[i] + "</td><td><img src='" + checkImage + "'></td></tr>"
-			resultsEmail = resultsEmail + "<p>" + emailCkImg + " " + quizAnswers[i] + "</p>"
-			}
-		resultsTable = resultsTable + "</table>"
-		resultsTable = "<p>" + numCorrect + " / " + i + " (" + (numCorrect/i*100).toFixed(0) + "%)</p>" + resultsTable
-		resultsEmail = "<div>" + numCorrect + " / " + i + " (" + (numCorrect/i*100).toFixed(0) + "%)</div>" + resultsEmail
-		
-		document.getElementById('quizResults').innerHTML = resultsTable
-		document.getElementById('quizResults').style.display = "inline"
-		/*
-		if (submitEmail != "") {
-			sendResults()
-			}
-		*/
-		}
-
-</SCRIPT>
-
-</head>
-
-<BODY bgcolor="#999999" text="#000000">
-
-<TABLE width="100%" height="100%" cellpadding="0" cellspacing="0" border="0" align="center">
-	<TR ID="instructions" STYLE="display: none;"><TD align="center"><A HREF="SpellingWords.htm" TARGET="_blank">Want to Make Your Own Spelling Words Manager?</A></TD></TR>
-	<TR height="1">
-    <TD bgcolor="#ddcdff">
-    <DIV STYLE="width: 728px; margin: 0px auto;">  
-		<DIV class="logo"><A href="https://www.flippity.net/"><IMG src="images/Flippity-Logo-Purple.png" alt="Flippity.net" width="100" height="43" border="0" align="left"></A></DIV>
-		<H1 id="title"></H1>
-     </DIV>
-     </TD>
-  </TR>
-  <TR valign="middle">
-    <TD align="center" valign="top">
-
-	<div id="emailNote" style="margin: 20px auto; padding: 10px 20px; color: red; background-color: #fce8e8; font-family: arial; font-size: 14px; border-radius: 20px; display: none;">The email results feature is no longer available. <a href="emailInfo.htm" style="color: red;">More information</a>.</div>
-
-	<DIV id="menu" STYLE="display: block; margin-top: 100px;">
-
-	<P ID="instructTxt" STYLE="margin-bottom: 30px; color: #666;"></P>
-
-	<DIV id="menuContent"><img src="images/Loading-Indicator-Lg-Gray.gif" style="margin-top: 150px;"></DIV>
-
-</DIV>
-
-<DIV ID="main" STYLE="display: none;">
-
-	<SCRIPT type="text/javascript">
-        var tabs = new Array('list','practice','quiz','more')
-        
-        function switchTab(tab) {
-            if (speech) {
-				speechSynthesis.cancel()
-				}
-			for(i = 0; i < tabs.length; i++) {
-                document.getElementById(tabs[i] + 'Tab').style.backgroundImage='url(images/SubNavTabRounded.png)'
-                document.getElementById(tabs[i] + 'Page').style.display = 'none'
-                }
-            document.getElementById(tab + 'Tab').style.backgroundImage='url(images/SubNavTabRounded-On.png)'
-            document.getElementById(tab + 'Page').style.display = 'inline-block'
-            }
-    </SCRIPT>
-
-    <DIV STYLE="width: 728px; margin: 20px auto 0px auto;">  
-        <DIV class="back-button"><img src="images/Back-Purple.png" width="32" height="31" title="Back to Menu" onClick="hideList()" align="left"></DIV>
-        <H2 class="list-name" ID="listName"></H2>
-    </DIV>
-
-    <center>
-    
-    <DIV STYLE="width: 728px; margin: 20px auto;">
-    
-        <TABLE width="728" cellspacing="0" cellpadding="0" height="40" background="images/SubNavRoundedBG.png" style="margin-bottom: 40px;">
-          <TR>
-            <TD>&nbsp;</TD>
-            <TD width="140" id="listTab" align="center" class="subnav" onClick="switchTab('list')" background="images/SubNavTabRounded-On.png"><P class="subnav" ID="listTxt" STYLE="color:#00cc00;"></P></TD>
-            <TD width="10">&nbsp;</TD>
-            <TD width="140" id="practiceTab" align="center" class="subnav" onClick="switchTab('practice'),startPractice()" background="images/SubNavTabRounded.png"><P class="subnav" ID="pracTxt" STYLE="color:#0000ff;"></P></TD>
-            <TD width="10">&nbsp;</TD>
-            <TD width="140" id="quizTab" align="center" class="subnav" onClick="switchTab('quiz'),startQuiz()" background="images/SubNavTabRounded.png"><P class="subnav" ID="quizTxt" STYLE="color:#ff00cc;"></P></TD>
-            <TD width="10">&nbsp;</TD>
-            <TD width="140" id="moreTab" align="center" class="subnav" onClick="switchTab('more')" background="images/SubNavTabRounded.png"><P class="subnav" ID="moreTxt" STYLE="color:#999;"></P></TD>
-            <TD>&nbsp;</TD>
-          </TR>
-        </TABLE>
-    
-    </DIV>
-
-    <DIV ID="noWords" STYLE="display: none;">
-        <P class="note">There are currently no words in this list.</P>
-    </DIV>
-    
-<DIV ID="listPage" STYLE="display: none;">
-    <DIV ID="playWords" ALIGN="left" STYLE="width: 250px; margin: 50px auto 0px auto;"></DIV>
-</DIV>
-
-<DIV ID="practicePage" STYLE="display: none;">
-    <DIV ID="practiceBox" STYLE="display: inline;">
-        <P ID="confirm">&nbsp;</P>
-        <img src="images/Red-X.png" width="44" height="32" class="checkmark" STYLE="visibility:hidden">
-        <input type="text" class="practice-box" id="practiceWord" STYLE="visibility:hidden" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onKeyPress="handlePractice(event)" value="practice">
-        <img src="images/Green-Check.png" width="44" height="32" ID="checkmark" class="checkmark" STYLE="visibility:hidden"> 
-
-        <script>
-            function handlePractice(e){
-                if (e.keyCode === 13){
-                    if (document.getElementById('confirm').innerHTML == "&nbsp;") {
-                        checkWord()
-                        }
-                    else {
-                        nextWord()
-                        }
-                    }
-                }
-        </script>
-    
-        <BR>
-    
-        <SPAN ID="repeat" STYLE="display: none;"><A onClick="repeatWord()"><img src="images/Repeat-Blue-Small.png" class="button" width="43" height="43" title="Repeat Word" STYLE="margin-bottom:24px;"></A></SPAN>
-        <SPAN ID="check"><A onClick="checkWord()"><img src="images/Check-Blue.png" class="button" width="65" height="63" title="Check Word"></A></SPAN>
-        <SPAN ID="next" STYLE="display: none;"><A onClick="nextWord()"><img src="images/Next-Blue.png" class="button" width="64" height="63" title="Next Word"></A></SPAN>
-    </DIV>
-   
-    <DIV id="practiceDone" STYLE="display: none;"><img src="images/Green-Check-Big.png" width="86" height="65" STYLE="margin: 61px;"><BR>
-    <A onClick="startPractice()"><img src="images/Reload-Blue.png" class="button" width="64" height="63" title="Practice Again"></A>
-    </DIV>   
-
-</DIV>
-    
-<DIV ID="quizPage" STYLE="display: none;">
-    
-    <DIV ID="quizBox">
-        <P><SPAN ID="quizNum"></SPAN> / <SPAN ID="quizTot"></SPAN></P>
-        <input type="text" class="quiz-box" id="quizWord" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onKeyPress="handleQuiz(event)" value="quiz">
-        <script>
-            function handleQuiz(e) {
-            if (e.keyCode === 13){
-                nextQuizWord()
-                }
-            }
-        </script>
-    
-        <BR>
-    
-        <A onClick="repeatQuizWord()"><img src="images/Repeat-Pink-Small.png" class="button" width="43" height="43" title="Repeat Word" STYLE="margin-bottom:24px;"></A>
-        <A onClick="nextQuizWord()"><img src="images/Next-Pink.png" ID="nextButtonQuiz" class="button" width="64" height="64" title="Next Word"></A>
- 	</DIV>
-
-    <DIV ID="quizResults" STYLE="display: none;"></DIV>
-        
-    <DIV ID="quizEmail" STYLE="display: none;">
-        <center>
-        <iframe src="blank.htm" height="180" width="600" frameborder="0" name="emailFrame" scrolling="no" seamless></iframe>
-        </center>
-     </DIV>
-<!--
-<FORM method="post" id="emailForm" action="Xsw-email.php" target="emailFrame">
-<INPUT type="hidden" id="formStudentName" name="formStudentName" value="">
-<INPUT type="hidden" id="formSubmitEmail" name="formSubmitEmail" value="">
-<INPUT type="hidden" id="formQuizResults" name="formQuizResults" value="">
-</FORM>
--->
- 
-</DIV>
-
-<DIV ID="morePage" STYLE="width: 275px; display: none;">
-    <p class='menu-item' STYLE="margin-top: 30px;" onclick="fontsLink()">Fun With Fonts<img src="images/Button-Launch-Purple.png" width="20" height="20" hspace="6" border="0" align="absmiddle"></p>
-    <p class='menu-item' STYLE="margin-top: 30px;" onClick="moreLink('mg')">Matching Game<img src="images/Button-Launch-Purple.png" width="20" height="20" hspace="6" border="0" align="absmiddle"></p>
-    <p class='menu-item' STYLE="margin-top: 30px;" onClick="moreLink('sm')">Snowman<img src="images/Button-Launch-Purple.png" width="20" height="20" hspace="6" border="0" align="absmiddle"></p>
-    <p class='menu-item' STYLE="margin-top: 30px;" onClick="moreLink('sc')">Word Scramble<img src="images/Button-Launch-Purple.png" width="20" height="20" hspace="6" border="0" align="absmiddle"></p>
-    <p class='menu-item' STYLE="margin-top: 30px;" onClick="moreLink('ws')">Word Search<img src="images/Button-Launch-Purple.png" width="20" height="20" hspace="6" border="0" align="absmiddle"></p>
-</DIV>
-
-	<script src="encode.js"></script>
-
-<script>
-
-	function fontsLink() {
-		var content = []
-		for (var i=2; i<data.length; i++) {
-			var wrd = data[i][list]
-			if (wrd != "") {
-				content.push(encode(wrd.replace(/ ".*"/,''))) // Remove context phrases in quotes from Spelling Words
-				}
-			else {
-				break
-				}
-			}
-		content = content.join()
-		window.open('https://flippity.net/ff.php?c=' + content + '&t=' + encode(pageTitle), '_blank')			
-		}
-
-	function moreLink(tmp) {
-		window.open("https://www.flippity.net/" + tmp + ".php?k=e/2PACX-1vTEU1RGe5jg6rUWnI62-d1HbxiqO7aSICq73cfgFqUe8OhMhUXoY4KqsMZI4_EC_Uv0fDIXz0-D063O&p=y&l=" + list, "_blank")
-		}
-
-</script>
-
-
-</TD>
-  </TR>
-  <TR>
-    <TD height="1" align="CENTER" valign="MIDDLE">
-	<SCRIPT type="text/javascript">
-	if (!speech) {
-		document.write("<P class='note'>This browser does not support speech.<BR>You will not be able to practice or take a quiz.</P>")
-		}
-    </SCRIPT>
-	<SCRIPT type="text/javascript">
-		function showHideShare() {
-            if (document.getElementById('share').style.display == 'none') {
-                document.getElementById('share').style.display = 'inline'
-                }
-            else {
-                document.getElementById('share').style.display = 'none'
-                }
-            }
-    </SCRIPT>
-
-      <BR>
-      <P class="share"><A class="share" href="javascript:showHideShare()" title="Show/Hide Sharing Options"><IMG SRC="images/Share-Icon-Gray.png" width="15" height="16" border="0" align="absmiddle"></A></P>
-     
-      <DIV ID="share" style="display: none;">
-      
-      <IMG src="images/Link-Icon.png" width="16" height="16" hspace="10" align="absmiddle">
-        <INPUT id="linkURL" type="text" class="linkBox" onClick="this.select()" value="">
-         
-        <TABLE align="center" class="shareOptions">
-          <TR>
-            <TD>
-				<script src="https://apis.google.com/js/platform.js" async defer></script>
-                <g:sharetoclassroom url="https://www.flippity.net/sw.php?k=e/2PACX-1vTEU1RGe5jg6rUWnI62-d1HbxiqO7aSICq73cfgFqUe8OhMhUXoY4KqsMZI4_EC_Uv0fDIXz0-D063O&p=y" size="20"></g:sharetoclassroom>
-            </TD>
-            <TD id="email"></TD>
-            <td id="QR"></td>
-            <td><a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEU1RGe5jg6rUWnI62-d1HbxiqO7aSICq73cfgFqUe8OhMhUXoY4KqsMZI4_EC_Uv0fDIXz0-D063O" target="_blank"><img src="images/Icon-GoogleSheets.png" width="16" height="20" border="0" title="Original Spreadsheet"></a></TD>
-          </TR>
-        </TABLE>
-       </DIV> 
-
-    </TD>
-  </TR>
-  <TR>
-    <TD height="1" align="CENTER" valign="MIDDLE" bgcolor="#ddcdff">
-      <P class="copyright">&copy; 2013-2024 Flippity.net. All Rights Reserved.</P>
-    </TD>
-  </TR>
- </TABLE>
- 
-<script type="text/javascript">
-	if ("e/2PACX-1vTEU1RGe5jg6rUWnI62-d1HbxiqO7aSICq73cfgFqUe8OhMhUXoY4KqsMZI4_EC_Uv0fDIXz0-D063O" == "1LaXauLqIe39hJ82FJVoAca--av39yezWDfmRPbWb4CI") { document.getElementById('instructions').style.display = "table-row" }
-	var loads = 0
-	function checkLoad() {
-		loads++
-		if (loaded) {
-			loadContent()
-			} 
-		else {
-			if (loads < 15) {window.setTimeout(checkLoad, 500) // Check every .5 second if content is loaded
-				}
-			else {
-				window.location.href = "error.php"
-				}
-			}
-		}
-
-	checkLoad()
-</script>
-
-</BODY>
-</HTML>
+		if (quizContext[wor
