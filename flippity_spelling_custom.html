@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- (original head content remains unchanged) -->
+</head>
+<body onload="checkLoad()">
+
+<!-- UI CONTAINER -->
+<div id="practicePage" style="display: none;">
+  <div id="practiceBox" style="display: inline;">
+    <p id="progressDisplay" style="font-size: 18px; font-family: Arial; margin-bottom: 10px;">&nbsp;</p>
+    <p id="confirm">&nbsp;</p>
+    <img src="images/Red-X.png" width="44" height="32" class="checkmark" style="visibility:hidden">
+    <input type="text" class="practice-box" id="practiceWord" style="visibility:hidden" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onkeypress="handlePractice(event)">
+    <img src="images/Green-Check.png" width="44" height="32" id="checkmark" class="checkmark" style="visibility:hidden">
+    <br>
+    <button onclick="goBack()">⬅️ Back</button>
+    <button onclick="goNext()">Next ➡️</button>
+    <br>
+    <span id="repeat" style="display: none;"><a onclick="repeatWord()"><img src="images/Repeat-Blue-Small.png" class="button" width="43" height="43" title="Repeat Word" style="margin-bottom:24px;"></a></span>
+    <span id="check"><a onclick="checkWord()"><img src="images/Check-Blue.png" class="button" width="65" height="63" title="Check Word"></a></span>
+    <span id="next" style="display: none;"><a onclick="nextWord()"><img src="images/Next-Blue.png" class="button" width="64" height="63" title="Next Word"></a></span>
+  </div>
+</div>
+
+<script>
+  let savedIndex = localStorage.getItem("flippityPracticeIndex") || 0;
+
+  function updatePracticeProgressDisplay() {
+    const display = document.getElementById("progressDisplay");
+    display.textContent = `Word ${parseInt(savedIndex) + 1} of ${writtenWords.length}`;
+  }
+
+  function startPractice() {
+    speechSynthesis.cancel();
+    wordNum = parseInt(savedIndex);
+    document.getElementById('practiceWord').style.visibility = "visible";
+    document.getElementById('practiceBox').style.display = "inline";
+    document.getElementById('practiceDone').style.display = "none";
+    nextWord();
+  }
+
+  function goNext() {
+    if (wordNum < writtenWords.length - 1) {
+      wordNum++;
+      savedIndex = wordNum;
+      localStorage.setItem("flippityPracticeIndex", wordNum);
+      nextWord();
+      updatePracticeProgressDisplay();
+    }
+  }
+
+  function goBack() {
+    if (wordNum > 0) {
+      wordNum--;
+      savedIndex = wordNum;
+      localStorage.setItem("flippityPracticeIndex", wordNum);
+      nextWord();
+      updatePracticeProgressDisplay();
+    }
+  }
+
+  const originalNextWord = nextWord;
+  nextWord = function() {
+    speechSynthesis.cancel();
+    if (wordNum == writtenWords.length) {
+      finishPractice();
+    } else {
+      document.getElementById("confirm").innerHTML = "&nbsp;";
+      document.getElementById("checkmark").style.visibility = "hidden";
+      document.getElementById("next").style.display = "none";
+      document.getElementById("check").style.display = "inline";
+      document.getElementById("repeat").style.display = "inline";
+      document.getElementById("practiceWord").value = "";
+      document.getElementById("practiceWord").focus();
+      speak(prompts[7]);
+      speak(spokenWords[wordNum]);
+      if (context[wordNum] != "") {
+        speak(context[wordNum]);
+        speak(spokenWords[wordNum]);
+      }
+      updatePracticeProgressDisplay();
+    }
+  };
+</script>
+
+<!-- END BODY -->
+</body>
+</html>
